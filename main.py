@@ -50,6 +50,17 @@ class FileManager:
             print(f"Hata: {file_path} bulunamadı!")
             return False
         
+        # Aynı dosyanın zaten eklenip eklenmediğini kontrol et
+        file_size = os.path.getsize(file_path)
+        original_name = Path(file_path).name
+        
+        for existing_id, existing_info in self.metadata.items():
+            if (existing_info.get("original_path") == file_path or 
+                (existing_info.get("file_size") == file_size and 
+                 Path(existing_info.get("original_path", "")).name == original_name)):
+                print(f"⚠️  Bu dosya zaten mevcut: {existing_info['original_name']} ({existing_info['category']} kategorisinde)")
+                return False
+        
         if use_smart_naming:
             print("🤖 İçerik analiz ediliyor...")
             smart_name = self.generate_smart_name(file_path)
