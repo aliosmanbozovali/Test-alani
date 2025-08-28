@@ -1,0 +1,85 @@
+
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kendime v1 – Tam Özellikli Test Planı (HTML)</title>
+<style>
+  :root{--bg:#0f1115;--card:#151922;--fg:#e8e8ea;--muted:#9aa0a6;--accent:#4f46e5}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Roboto,Arial}
+  header{padding:20px;background:var(--card);position:sticky;top:0;border-bottom:1px solid #222}
+  h1{margin:0;font-size:22px} .wrap{max-width:980px;margin:0 auto;padding:24px}
+  section{background:var(--card);border:1px solid #222;border-radius:14px;padding:18px;margin:14px 0}
+  h2{margin:0 0 10px 0;font-size:18px} ul{line-height:1.6}
+  code, pre{background:#0b0d12;border:1px solid #222;padding:2px 6px;border-radius:8px}
+  .pill{display:inline-block;border:1px solid #333;border-radius:999px;padding:4px 10px;margin:4px 4px 0 0;color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Kendime v1 – Tam Özellikli Test Planı</h1><div>
+  <span class="pill">Klasör + Etiket</span><span class="pill">Sesli Not</span><span class="pill">Offline</span>
+  <span class="pill">Senkron</span><span class="pill">TR/DE</span><span class="pill">Light/Dark</span>
+</div></div></header>
+<div class="wrap">
+
+<section>
+  <h2>1) Kurulum ve Ortam</h2>
+  <ul>
+    <li>Android 10+ telefon, internet <strong>var/yok</strong> senaryoları.</li>
+    <li>Test verisi: <strong>5 klasör</strong>, <strong>15 not</strong>, <strong>10 etiket</strong> (TR/DE karışık), <strong>3 sesli not</strong>.</li>
+    <li>İzinler: Mikrofon, Depolama, İnternet.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>2) Kabul Kriterleri (Go/No-Go)</h2>
+  <ul>
+    <li>Kritik hatasız çalışma.</li>
+    <li>Sesli not → metin doğruluğu %90+, düzenlenebilirlik.</li>
+    <li>Offline eklenen notlar bağlantı gelince <strong>≤30 sn</strong> içinde senkron.</li>
+    <li>Arama: 10–50 not için <strong>&lt;100 ms</strong>.</li>
+    <li>Soğuk açılış <strong>&lt; 2s</strong>, kaydırma akıcı (≈60 FPS).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>3) Test Senaryoları (Özet)</h2>
+  <ul>
+    <li>TS-01 İlk açılış turu (1 dk) tamamlanır.</li>
+    <li>TS-02 Klasör oluştur/düzenle/sil; notu başka klasöre taşı.</li>
+    <li>TS-03 Etiket ekle (virgülle), listele, toplu değiştir.</li>
+    <li>TS-04 Hibrid filtre: Klasör=İş, Etiket=acil → doğru sonuç sayısı.</li>
+    <li>TS-05 Sesli not → metne çevir → düzenle → kaydet.</li>
+    <li>TS-06 Mikrofon izni reddi → alternatif akış (metin not).</li>
+    <li>TS-07 Offline: Uçak modunda 3 not; bağlantı gelince otomatik senkron.</li>
+    <li>TS-08 Cihazlar arası (telefon + masaüstü) anında görünür.</li>
+    <li>TS-09 Arama: başlık/içerik/etiket (TR/DE karakter) doğru eşleşir.</li>
+    <li>TS-10 Performans: 500 notta arama/kaydırma hedefleri.</li>
+    <li>TS-11 Yedekleme/Export: JSON/Markdown/PDF paylaşım akışı.</li>
+    <li>TS-12 Tema: Aydınlık/Karanlık geçişinde UI bozulmaz.</li>
+    <li>TS-13 Dil: TR/DE toggle → tüm metinler çevrili, kesilme yok.</li>
+    <li>TS-14 Bildirimler: Senkron/STT hataları doğru metinle.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>4) Hata Raporu (Kısa Şablon)</h2>
+  <ul>
+    <li><strong>ID</strong>, Versiyon, Cihaz, Adımlar, Beklenen, Gerçek, Ekran görüntüsü, Log, Önem (Kritik/Yüksek/Orta/Düşük), Durum.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5) Yayına Hazırlık Kontrol Listesi</h2>
+  <ul>
+    <li>Simge/splash, gizlilik politikası, izin metinleri.</li>
+    <li>Onboarding (1 dk tur), mağaza sayfaları (TR/DE), ekran görüntüleri.</li>
+  </ul>
+</section>
+
+<footer>© Kendime – HTML test planı (Replit içinde görüntüleme için hazırlanmıştır.)</footer>
+</div>
+</body>
+</html>

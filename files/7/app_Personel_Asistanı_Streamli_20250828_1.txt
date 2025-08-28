@@ -1,0 +1,97 @@
+app.py — Personel Asistanı (Streamlit Web)
+
+Özellikler: PDF/JPG/PNG yükleme, OCR ile tür tespiti, TR/DE dil, klasörleme+versiyonlama, arama/filtre
+
+Çalıştırma: 1) pip install -r requirements.txt  2) streamlit run app.py
+
+import os import io import shutil import datetime from typing import List
+
+import streamlit as st from PIL import Image import pytesseract from pdf2image import convert_from_bytes
+
+=====================
+
+K O N F I G
+
+=====================
+
+POPPLER_PATH = r"C:\poppler\Library\bin"  # Windows için Poppler yolu (gerekirse değiştir) TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Tesseract yolu (gerekirse değiştir)
+
+if os.path.isfile(TESSERACT_CMD): pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD if POPPLER_PATH and os.path.isdir(POPPLER_PATH): os.environ['PATH'] += os.pathsep + POPPLER_PATH
+
+HOME = os.path.expanduser("~") ARCHIVE_ROOT = os.path.join(HOME, "Desktop", "Belgeler_Arsiv_Web") os.makedirs(ARCHIVE_ROOT, exist_ok=True)
+
+DOC_TYPES_TR = ["Arbeitsvertrag", "Lohnlar", "Kundigung", "Çalışma Saatleri", "Aylık Rapor", "Diğer"] DOC_TYPES_DE = ["Arbeitsvertrag", "Lohn", "Kündigung", "Arbeitszeiten", "Monatsbericht", "Andere"]
+
+=====================
+
+Y A R D I M C I L A R
+
+=====================
+
+def sanitize_type(t: str) -> str: return (t.replace(" ", "_") .replace("ç", "c").replace("Ç", "C") .replace("ğ", "g").replace("Ğ", "G") .replace("ı", "i").replace("İ", "I") .replace("ö", "o").replace("Ö", "O") .replace("ş", "s").replace("Ş", "S") .replace("ü", "u").replace("Ü", "U"))
+
+def detect_type(image_text: str) -> str: t = image_text.lower() if any(w in t for w in ["arbeitsvertrag", "iş sözleşmesi", "issözleşmesi"]): return "Arbeitsvertrag" if any(w in t for w in ["lohn", "maaş", "maas", "bordro", "payroll"]): return "Lohnlar" if any(w in t for w in ["kündigung", "istifa", "fesih"]): return "Kundigung" if any(w in t for w in ["stunden", "çalışma saat", "arbeitszeiten"]): return "Çalışma Saatleri" if any(w in t for w in ["monat", "monats", "rapor", "bericht"]): return "Aylık Rapor" return "Diğer"
+
+def ocr_from_file(file_bytes: bytes, filename: str) -> str: ext = os.path.splitext(filename)[1].lower() text = "" if ext == ".pdf": # PDF -> image pages images = convert_from_bytes(file_bytes, dpi=200) for img in images[:3]:  # hız için ilk 3 sayfa yeterli genelde text += pytesseract.image_to_string(img) else: img = Image.open(io.BytesIO(file_bytes)).convert("RGB") text = pytesseract.image_to_string(img) return text
+
+def save_versioned(file_bytes: bytes, filename: str, doc_type: str) -> str: target_dir = os.path.join(ARCHIVE_ROOT, sanitize_type(doc_type)) os.makedirs(target_dir, exist_ok=True) name, ext = os.path.splitext(filename) stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") target_name = f"{name}_{stamp}{ext}" target_path = os.path.join(target_dir, target_name) with open(target_path, "wb") as f: f.write(file_bytes) return target_path
+
+=====================
+
+S T R E A M L I T   U I
+
+=====================
+
+st.set_page_config(page_title="Personel Asistanı Web", layout="wide")
+
+Dil seçimi
+
+lang = st.sidebar.radio("Dil / Sprache", ["TR", "DE"], index=0)
+
+if "records" not in st.session_state: st.session_state.records = []  # list of dicts
+
+if lang == "TR": st.title("Personel Asistanı — Web Sürüm") st.write("PDF/JPG/PNG yükleyin, OCR ile tür tespiti yapılsın, arşivlensin.") doc_types = DOC_TYPES_TR col_labels = {"file": "Dosya", "type": "Tür", "date": "Tarih", "path": "Kayıt Yolu"} upload_label = "Belge Yükle (PDF/JPG/PNG)" manual_label = "Tür (isterseniz manuel seçin)" search_label = "Ara" preview_label = "OCR Metin Önizleme" saved_ok = "Kayıt tamam:" open_folder_help = f"Arşiv klasörü: {ARCHIVE_ROOT}" else: st.title("Personalassistent — Web Version") st.write("PDF/JPG/PNG hochladen, per OCR dokumenttyp erkennen und ablegen.") doc_types = DOC_TYPES_DE col_labels = {"file": "Datei", "type": "Typ", "date": "Datum", "path": "Ablagepfad"} upload_label = "Datei hochladen (PDF/JPG/PNG)" manual_label = "Typ (optional manuell wählen)" search_label = "Suche" preview_label = "OCR Text Vorschau" saved_ok = "Gespeichert:" open_folder_help = f"Ablageordner: {ARCHIVE_ROOT}"
+
+st.sidebar.info(open_folder_help)
+
+Upload alanı
+
+up_file = st.file_uploader(upload_label, type=["pdf", "jpg", "jpeg", "png"]) manual_type = st.selectbox(manual_label, options=doc_types, index=0)
+
+İşle butonu
+
+if st.button("İşle / Verarbeiten"): if up_file is None: st.warning("Lütfen önce bir dosya yükleyin / Bitte zuerst eine Datei hochladen.") else: try: file_bytes = up_file.read() text = ocr_from_file(file_bytes, up_file.name) detected = detect_type(text) chosen = manual_type or detected
+
+saved_path = save_versioned(file_bytes, up_file.name, chosen)
+        date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+        st.session_state.records.append({
+            "file": up_file.name,
+            "type": chosen,
+            "date": date_str,
+            "path": saved_path,
+            "text": text[:5000],  # log için ilk 5000 karakter
+        })
+
+        st.success(f"{saved_ok} {saved_path}")
+    except Exception as e:
+        st.error(f"Hata/Fehler: {e}")
+
+Arama kutusu
+
+q = st.text_input(search_label, "")
+
+Kayıt tablosu
+
+def filtered_records(): ql = q.lower() for r in st.session_state.records: blob = f"{r['file']} {r['type']} {r['date']} {r['path']}".lower() if ql in blob: yield r
+
+rows = list(filtered_records())
+
+st.write("### Liste / Liste") st.dataframe( [{col_labels['file']: r['file'], col_labels['type']: r['type'], col_labels['date']: r['date'], col_labels['path']: r['path']} for r in rows], use_container_width=True )
+
+Seçili kaydın OCR metnini göster
+
+st.write(f"### {preview_label}") if rows: idx = st.number_input("Satır / Zeile", min_value=1, max_value=len(rows), value=1) st.code(rows[idx-1]['text'] or "(boş)")
+
+st.caption("© Personel Asistanı Web — OCR ile otomatik tür tespiti ve arşivleme")
+
