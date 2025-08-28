@@ -4,6 +4,25 @@ import shutil
 import json
 from datetime import datetime
 from pathlib import Path
+import re
+try:
+    from PIL import Image
+    import pytesseract
+    OCR_AVAILABLE = True
+except ImportError:
+    OCR_AVAILABLE = False
+
+try:
+    import docx
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+
+try:
+    import PyPDF2
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
 
 class FileManager:
     def __init__(self, base_directory="files"):
@@ -25,17 +44,33 @@ class FileManager:
         with open(self.metadata_file, 'w', encoding='utf-8') as f:
             json.dump(self.metadata, f, ensure_ascii=False, indent=2)
     
-    def add_file(self, file_path, category="Genel", tags=None, description=""):
+    def add_file(self, file_path, category="Genel", tags=None, description="", use_smart_naming=False):
         """Dosya ekle ve kategorize et"""
         if not os.path.exists(file_path):
             print(f"Hata: {file_path} bulunamadı!")
             return False
         
-        file_name = Path(file_path).name
+        if use_smart_naming:
+            print("🤖 İçerik analiz ediliyor...")
+            smart_name = self.generate_smart_name(file_path)
+            file_name = smart_name
+            print(f"💡 Önerilen ad: {smart_name}")
+        else:
+            file_name = Path(file_path).name
+        
         category_dir = self.base_directory / category
         category_dir.mkdir(exist_ok=True)
         
         destination = category_dir / file_name
+        
+        # Aynı isimli dosya varsa numaralandır
+        counter = 1
+        original_destination = destination
+        while destination.exists():
+            name_stem = original_destination.stem
+            suffix = original_destination.suffix
+            destination = category_dir / f"{name_stem}_{counter}{suffix}"
+            counter += 1
         
         # Dosyayı kopyala
         shutil.copy2(file_path, destination)
@@ -43,7 +78,8 @@ class FileManager:
         # Metadata kaydet
         file_id = str(destination.relative_to(self.base_directory))
         self.metadata[file_id] = {
-            "original_name": file_name,
+            "original_name": destination.name,
+            "original_path": file_path,
             "category": category,
             "tags": tags or [],
             "description": description,
@@ -120,6 +156,73 @@ class FileManager:
         print(f"❌ Dosya bulunamadı: {file_name}")
         return False
     
+    def extract_content(self, file_path):
+        """Dosya içeriğinden metin çıkar"""
+        try:
+            file_ext = Path(file_path).suffix.lower()
+            
+            # Metin dosyaları
+            if file_ext in ['.txt', '.md', '.py', '.js', '.html', '.css', '.json']:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read()[:500]  # İlk 500 karakter
+            
+            # PDF dosyaları
+            elif file_ext == '.pdf' and PDF_AVAILABLE:
+                with open(file_path, 'rb') as f:
+                    reader = PyPDF2.PdfReader(f)
+                    text = ""
+                    for page in reader.pages[:3]:  # İlk 3 sayfa
+                        text += page.extract_text()
+                    return text[:500]
+            
+            # Word dosyaları
+            elif file_ext in ['.docx', '.doc'] and DOCX_AVAILABLE:
+                doc = docx.Document(file_path)
+                text = ""
+                for paragraph in doc.paragraphs[:10]:  # İlk 10 paragraf
+                    text += paragraph.text + " "
+                return text[:500]
+            
+            # Resim dosyaları (OCR)
+            elif file_ext in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff'] and OCR_AVAILABLE:
+                image = Image.open(file_path)
+                text = pytesseract.image_to_string(image, lang='tur+eng')
+                return text[:500]
+                
+        except Exception as e:
+            print(f"İçerik çıkarma hatası: {e}")
+            
+        return ""
+    
+    def generate_smart_name(self, file_path, content=""):
+        """İçeriğe göre akıllı dosya adı üret"""
+        original_name = Path(file_path).stem
+        extension = Path(file_path).suffix
+        
+        if not content:
+            content = self.extract_content(file_path)
+        
+        if content:
+            # Metni temizle ve anlamlı kelimeleri al
+            words = re.findall(r'\b[a-zA-ZğüşıöçĞÜŞİÖÇ]+\b', content)
+            meaningful_words = [w for w in words if len(w) > 2 and w.lower() not in 
+                              ['the', 'and', 'bir', 'ile', 'için', 'olan', 'var', 'this', 'that']]
+            
+            if meaningful_words:
+                # İlk 3-4 anlamlı kelimeyi al
+                smart_name = "_".join(meaningful_words[:4])
+                # Uzun isimleri kısalt
+                if len(smart_name) > 30:
+                    smart_name = smart_name[:30]
+                
+                # Tarih ekle
+                date_str = datetime.now().strftime("%Y%m%d")
+                return f"{smart_name}_{date_str}{extension}"
+        
+        # İçerik bulunamazsa orijinal ad + tarih
+        date_str = datetime.now().strftime("%Y%m%d_%H%M")
+        return f"{original_name}_{date_str}{extension}"
+    
     def format_size(self, size_bytes):
         """Dosya boyutunu formatla"""
         if size_bytes < 1024:
@@ -145,7 +248,8 @@ def main():
         print("4. Dosya ara")
         print("5. Kategori oluştur")
         print("6. Dosya sil")
-        print("7. Çıkış")
+        print("7. Toplu dosya işleme")
+        print("8. Çıkış")
         
         choice = input("\nSeçiminiz (1-7): ").strip()
         
@@ -156,7 +260,9 @@ def main():
             tags_input = input("Etiketler (virgülle ayırın): ").strip()
             tags = [tag.strip() for tag in tags_input.split(",")] if tags_input else []
             
-            fm.add_file(file_path, category, tags, description)
+            smart_naming = input("İçeriğe göre otomatik adlandır? (e/h): ").strip().lower() == 'e'
+            
+            fm.add_file(file_path, category, tags, description, smart_naming)
         
         elif choice == "2":
             category = input("Kategori (tümü için boş bırakın): ").strip() or None
@@ -181,6 +287,28 @@ def main():
                 fm.delete_file(file_name)
         
         elif choice == "7":
+            folder_path = input("İşlenecek klasör yolu: ").strip()
+            if not os.path.exists(folder_path):
+                print("❌ Klasör bulunamadı!")
+                continue
+            
+            category = input("Kategori (varsayılan: Genel): ").strip() or "Genel"
+            smart_naming = input("Tüm dosyalar için akıllı adlandırma? (e/h): ").strip().lower() == 'e'
+            
+            print(f"\n🔄 {folder_path} klasöründeki dosyalar işleniyor...")
+            
+            processed = 0
+            for file_path in Path(folder_path).iterdir():
+                if file_path.is_file():
+                    try:
+                        fm.add_file(str(file_path), category, [], "", smart_naming)
+                        processed += 1
+                    except Exception as e:
+                        print(f"❌ {file_path.name} işlenemedi: {e}")
+            
+            print(f"✅ {processed} dosya başarıyla işlendi!")
+        
+        elif choice == "8":
             print("👋 Görüşürüz!")
             break
         
