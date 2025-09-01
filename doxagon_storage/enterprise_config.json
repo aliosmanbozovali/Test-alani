@@ -1,0 +1,59 @@
+{
+  "storage": {
+    "type": "local",
+    "encryption_enabled": true,
+    "max_file_size_mb": 100,
+    "allowed_extensions": [
+      ".pdf",
+      ".doc",
+      ".docx",
+      ".xls",
+      ".xlsx",
+      ".ppt",
+      ".pptx",
+      ".txt",
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".bmp",
+      ".tiff"
+    ]
+  },
+  "ocr": {
+    "enabled": true,
+    "languages": [
+      "tur",
+      "eng"
+    ],
+    "auto_ocr": true
+  },
+  "ai": {
+    "classification_enabled": false,
+    "api_key": null,
+    "model": "gpt-3.5-turbo"
+  },
+  "security": {
+    "session_timeout_hours": 8,
+    "max_login_attempts": 5,
+    "password_min_length": 8,
+    "require_2fa": false
+  },
+  "notifications": {
+    "email_enabled": false,
+    "smtp_server": null,
+    "smtp_port": 587,
+    "smtp_username": null,
+    "smtp_password": null
+  },
+  "retention": {
+    "default_years": 7,
+    "policies": {
+      "Yasal": 10,
+      "Muhasebe": 10,
+      "İnsan Kaynakları": 5,
+      "Sözleşme": 7,
+      "Fatura": 10
+    }
+  }
+}
