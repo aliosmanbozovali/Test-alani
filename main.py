@@ -12,8 +12,13 @@ from typing import Optional, List, Dict, Any
 import base64
 import secrets
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+try:
+    from email.mime.text import MIMEText as MimeText
+    from email.mime.multipart import MIMEMultipart as MimeMultipart
+except ImportError:
+    # Email özellikleri devre dışı
+    MimeText = None
+    MimeMultipart = None
 
 try:
     from PIL import Image
