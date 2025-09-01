@@ -15,10 +15,15 @@ import smtplib
 try:
     from email.mime.text import MIMEText as MimeText
     from email.mime.multipart import MIMEMultipart as MimeMultipart
+    EMAIL_AVAILABLE = True
 except ImportError:
     # Email özellikleri devre dışı
-    MimeText = None
-    MimeMultipart = None
+    class DummyMime:
+        def __init__(self, *args, **kwargs):
+            pass
+    MimeText = DummyMime
+    MimeMultipart = DummyMime
+    EMAIL_AVAILABLE = False
 
 try:
     from PIL import Image
