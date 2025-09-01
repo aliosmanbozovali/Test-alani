@@ -1,0 +1,11 @@
+{
+  "retention_policies": {
+    "Yasal": 7,
+    "Muhasebe": 10,
+    "İnsan Kaynakları": 5,
+    "Genel": 3
+  },
+  "auto_classification": true,
+  "version_control": true,
+  "audit_trail": true
+}
