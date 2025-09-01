@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import tempfile
 import os
+import sqlite3
 from main import DoxagonEnterpriseManager
 import json
 from datetime import datetime
