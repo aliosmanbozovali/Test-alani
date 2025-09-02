@@ -47,6 +47,7 @@ HTML_TEMPLATE = """
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
         .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
         .login-form { max-width: 400px; margin: 50px auto; }
+        .preview-frame { width: 100%; height: 500px; border: 1px solid #ddd; border-radius: 5px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -337,6 +338,7 @@ HTML_TEMPLATE = """
                                 <p><strong>👤 Yükleyen:</strong> ${doc.uploaded_by_name}</p>
                                 ${doc.description ? `<p><strong>📝 Açıklama:</strong> ${doc.description}</p>` : ''}
                                 ${doc.tags.length > 0 ? `<p><strong>🏷️ Etiketler:</strong> ${doc.tags.join(', ')}</p>` : ''}
+                                <button class="btn" onclick="previewDocument('${doc.id}')">👁️ Önizle</button>
                                 <button class="btn" onclick="downloadDocument('${doc.id}')">📥 İndir</button>
                                 <button class="btn" onclick="copyToShare('${doc.id}')">🔗 Paylaş</button>
                             </div>
@@ -371,6 +373,7 @@ HTML_TEMPLATE = """
                                 <p><strong>💾 Boyut:</strong> ${formatFileSize(doc.file_size)}</p>
                                 <p><strong>📅 Tarih:</strong> ${doc.created_at.substring(0, 10)}</p>
                                 <p><strong>🔒 Gizlilik:</strong> ${doc.confidentiality}</p>
+                                <button class="btn" onclick="previewDocument('${doc.id}')">👁️ Önizle</button>
                                 <button class="btn" onclick="downloadDocument('${doc.id}')">📥 İndir</button>
                                 <button class="btn" onclick="copyToShare('${doc.id}')">🔗 Paylaş</button>
                             </div>
@@ -465,6 +468,44 @@ HTML_TEMPLATE = """
         function downloadDocument(documentId) {
             window.open(`/api/documents/${documentId}/download`, '_blank');
         }
+        
+        function previewDocument(documentId) {
+            const previewUrl = `/api/documents/${documentId}/preview`;
+            
+            // Önizleme için bir modal veya yeni pencere açılabilir
+            // Bu örnekte, sayfada bir iframe içinde gösteriyoruz
+            
+            // Mevcut önizleme içeriğini temizle (eğer varsa)
+            const existingPreview = document.getElementById('previewContent');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+
+            const previewDiv = document.createElement('div');
+            previewDiv.id = 'previewContent';
+            previewDiv.className = 'card';
+            previewDiv.innerHTML = `
+                <h4>👁️ Önizleme</h4>
+                <iframe src="${previewUrl}" class="preview-frame" frameborder="0"></iframe>
+                <button class="btn btn-danger" onclick="closePreview()">❌ Kapat</button>
+            `;
+            
+            // Önizleme içeriğini uygun bir yere ekle (örneğin, aktif sekmeye veya sayfa sonuna)
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                activeTab.appendChild(previewDiv);
+            } else {
+                document.body.appendChild(previewDiv); // Fallback
+            }
+        }
+
+        function closePreview() {
+            const previewContent = document.getElementById('previewContent');
+            if (previewContent) {
+                previewContent.remove();
+            }
+        }
+
 
         function copyToShare(documentId) {
             document.getElementById('shareDocumentId').value = documentId;
@@ -656,6 +697,46 @@ def api_download(document_id):
 
     except Exception as e:
         return jsonify({'success': False, 'message': f'İndirme hatası: {str(e)}'}), 500
+
+@app.route('/api/documents/<document_id>/preview')
+def api_preview(document_id):
+    """Belge önizleme"""
+    if not doxagon.current_user:
+        return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
+
+    try:
+        import sqlite3
+        with sqlite3.connect(doxagon.db.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT file_path, original_name, file_type FROM documents 
+                WHERE id = ? AND organization_id = ? AND is_active = 1
+            ''', (document_id, doxagon.current_user['organization_id']))
+
+            result = cursor.fetchone()
+            if result:
+                file_path, original_name, file_type = result
+
+                # Dosya türüne göre önizleme yap
+                if file_type.startswith('text/'):
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                    return render_template_string("<pre>{{ content }}</pre>", content=content)
+                elif file_type.startswith('image/'):
+                    return send_file(file_path, mimetype=file_type)
+                elif file_type == 'application/pdf':
+                    # PDF önizleme için genellikle özel kütüphaneler veya servisler gerekir.
+                    # Basit bir yaklaşım olarak, PDF'yi doğrudan göstermeye çalışalım.
+                    # Daha gelişmiş önizleme için pdf.js gibi bir kütüphane entegre edilebilir.
+                    return send_file(file_path, mimetype=file_type)
+                else:
+                    return jsonify({'success': False, 'message': 'Bu dosya türü önizlenemez'}), 415
+            else:
+                return jsonify({'success': False, 'message': 'Belge bulunamadı'}), 404
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Önizleme hatası: {str(e)}'}), 500
+
 
 @app.route('/api/share/create', methods=['POST'])
 def api_create_share():
