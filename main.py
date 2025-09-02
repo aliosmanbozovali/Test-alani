@@ -521,13 +521,13 @@ class DoxagonEnterpriseManager:
         elif any(word in content_lower for word in ['bilanço', 'gelir', 'gider', 'accounting']):
             return "Muhasebe"
 
-        # Personel belgesi
-        elif any(word in content_lower for word in ['personel', 'employee', 'maaş', 'bordro', 'işe alım']):
-            return "İnsan Kaynakları"
+        # Maaş bordrosu tespiti
+        elif any(word in content_lower for word in ['lohn abrechnung', 'lohnabrechnung', 'maaş bordrosu', 'payroll', 'salary slip', 'bordro']):
+            return "Lohn abrechnung"
 
-        # Bordro/Maaş hesaplama
-        elif any(word in content_lower for word in ['lohn', 'abrechnung', 'gehalt', 'salary', 'payroll', 'bordro']):
-            return "Lohn Abrechnung"
+        # Personel belgesi
+        elif any(word in content_lower for word in ['personel', 'employee', 'maaş', 'işe alım']):
+            return "İnsan Kaynakları"
 
         # Dosya adından çıkarım
         if 'fatura' in filename_lower or 'invoice' in filename_lower:

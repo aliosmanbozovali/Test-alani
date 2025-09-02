@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, send_file, render_template_string
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -88,31 +87,32 @@ HTML_TEMPLATE = """
                     <p>📁 Dosyaları buraya sürükleyin veya seçin</p>
                     <input type="file" id="fileInput" multiple style="margin-top: 20px;">
                 </div>
-                
+
                 <div class="form-group">
                     <label>📂 Kategori:</label>
                     <select id="category">
                         <option value="">Otomatik Sınıflandırma</option>
                         <option value="Fatura">Fatura</option>
                         <option value="Sözleşme">Sözleşme</option>
+                        <option value="Arbeitsvertrag">Arbeitsvertrag (İş Sözleşmesi)</option>
+                        <option value="Lohn abrechnung">Lohn abrechnung (Maaş Bordrosu)</option>
                         <option value="Yasal">Yasal</option>
                         <option value="Muhasebe">Muhasebe</option>
                         <option value="İnsan Kaynakları">İnsan Kaynakları</option>
-                        <option value="Lohn Abrechnung">Lohn Abrechnung</option>
                         <option value="Genel">Genel</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>📝 Açıklama:</label>
                     <textarea id="description" placeholder="Belge hakkında açıklama..."></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label>🏷️ Etiketler (virgülle ayırın):</label>
                     <input type="text" id="tags" placeholder="etiket1, etiket2, etiket3">
                 </div>
-                
+
                 <div class="form-group">
                     <label>🔒 Gizlilik Düzeyi:</label>
                     <select id="confidentiality">
@@ -121,7 +121,7 @@ HTML_TEMPLATE = """
                         <option value="Çok Gizli">Çok Gizli</option>
                     </select>
                 </div>
-                
+
                 <button class="btn" onclick="uploadFiles()">📤 Yükle</button>
             </div>
 
@@ -132,7 +132,7 @@ HTML_TEMPLATE = """
                     <label>Arama Terimi:</label>
                     <input type="text" id="searchQuery" placeholder="Belge adı, içerik veya açıklama...">
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div class="form-group">
                         <label>📂 Kategori:</label>
@@ -140,14 +140,14 @@ HTML_TEMPLATE = """
                             <option value="">Tümü</option>
                             <option value="Fatura">Fatura</option>
                             <option value="Sözleşme">Sözleşme</option>
+                            <option value="Arbeitsvertrag">Arbeitsvertrag (İş Sözleşmesi)</option>
+                            <option value="Lohn abrechnung">Lohn abrechnung (Maaş Bordrosu)</option>
                             <option value="Yasal">Yasal</option>
                             <option value="Muhasebe">Muhasebe</option>
                             <option value="İnsan Kaynakları">İnsan Kaynakları</option>
-                            <option value="Lohn Abrechnung">Lohn Abrechnung</option>
-                            <option value="Genel">Genel</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>🔒 Gizlilik:</label>
                         <select id="searchConfidentiality">
@@ -157,20 +157,20 @@ HTML_TEMPLATE = """
                             <option value="Çok Gizli">Çok Gizli</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>📅 Başlangıç Tarihi:</label>
                         <input type="date" id="searchDateFrom">
                     </div>
-                    
+
                     <div class="form-group">
                         <label>📅 Bitiş Tarihi:</label>
                         <input type="date" id="searchDateTo">
                     </div>
                 </div>
-                
+
                 <button class="btn" onclick="searchDocuments()">🔍 Ara</button>
-                
+
                 <div id="searchResults" class="results"></div>
             </div>
 
@@ -195,7 +195,7 @@ HTML_TEMPLATE = """
                     <label>📋 Belge ID:</label>
                     <input type="text" id="shareDocumentId" placeholder="Paylaşılacak belgenin ID'si">
                 </div>
-                
+
                 <div class="form-group">
                     <label>⏰ Geçerlilik Süresi:</label>
                     <select id="shareExpires">
@@ -205,19 +205,19 @@ HTML_TEMPLATE = """
                         <option value="720">30 Gün</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>🔒 Şifre (isteğe bağlı):</label>
                     <input type="password" id="sharePassword" placeholder="Paylaşım şifresi">
                 </div>
-                
+
                 <div class="form-group">
                     <label>📥 Maksimum İndirme (boş = sınırsız):</label>
                     <input type="number" id="shareMaxDownloads" placeholder="Örn: 5">
                 </div>
-                
+
                 <button class="btn" onclick="createShareLink()">🔗 Paylaşım Linki Oluştur</button>
-                
+
                 <div id="shareResult" style="margin-top: 20px;"></div>
             </div>
         </div>
@@ -229,7 +229,7 @@ HTML_TEMPLATE = """
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
+
             fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -256,10 +256,10 @@ HTML_TEMPLATE = """
             // Tüm sekmeleri gizle
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
-            
+
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
+
             // Seçilen sekmeyi göster
             document.getElementById(tabName + 'Tab').classList.add('active');
             event.target.classList.add('active');
@@ -268,22 +268,22 @@ HTML_TEMPLATE = """
         function uploadFiles() {
             const fileInput = document.getElementById('fileInput');
             const files = fileInput.files;
-            
+
             if (files.length === 0) {
                 alert('❌ Lütfen dosya seçin!');
                 return;
             }
-            
+
             const formData = new FormData();
             for (let file of files) {
                 formData.append('files', file);
             }
-            
+
             formData.append('category', document.getElementById('category').value);
             formData.append('description', document.getElementById('description').value);
             formData.append('tags', document.getElementById('tags').value);
             formData.append('confidentiality', document.getElementById('confidentiality').value);
-            
+
             fetch('/api/documents/upload', {
                 method: 'POST',
                 body: formData
@@ -314,7 +314,7 @@ HTML_TEMPLATE = """
                 date_from: document.getElementById('searchDateFrom').value,
                 date_to: document.getElementById('searchDateTo').value
             };
-            
+
             fetch('/api/documents/search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -325,7 +325,7 @@ HTML_TEMPLATE = """
                 const resultsDiv = document.getElementById('searchResults');
                 if (data.success) {
                     let html = `<h4>🔍 ${data.results.total} sonuç bulundu</h4>`;
-                    
+
                     data.results.documents.forEach(doc => {
                         html += `
                             <div class="document-item">
@@ -342,7 +342,7 @@ HTML_TEMPLATE = """
                             </div>
                         `;
                     });
-                    
+
                     resultsDiv.innerHTML = html;
                 } else {
                     resultsDiv.innerHTML = `<p>❌ ${data.message}</p>`;
@@ -361,7 +361,7 @@ HTML_TEMPLATE = """
                 const docsDiv = document.getElementById('myDocuments');
                 if (data.success) {
                     let html = `<h4>📁 ${data.results.total} belgeniz var</h4>`;
-                    
+
                     data.results.documents.forEach(doc => {
                         html += `
                             <div class="document-item">
@@ -376,7 +376,7 @@ HTML_TEMPLATE = """
                             </div>
                         `;
                     });
-                    
+
                     docsDiv.innerHTML = html;
                 } else {
                     docsDiv.innerHTML = `<p>❌ ${data.message}</p>`;
@@ -391,7 +391,7 @@ HTML_TEMPLATE = """
                 const statsDiv = document.getElementById('statisticsContent');
                 if (data.success) {
                     const stats = data.statistics;
-                    
+
                     let html = `
                         <div class="stats-grid">
                             <div class="stat-card">
@@ -403,11 +403,11 @@ HTML_TEMPLATE = """
                                 <p>Toplam Boyut</p>
                             </div>
                         </div>
-                        
+
                         <h4>📂 Kategori Dağılımı:</h4>
                         <div class="results">
                     `;
-                    
+
                     stats.categories.forEach(([category, count, size]) => {
                         html += `
                             <div class="document-item">
@@ -415,7 +415,7 @@ HTML_TEMPLATE = """
                             </div>
                         `;
                     });
-                    
+
                     html += '</div>';
                     statsDiv.innerHTML = html;
                 } else {
@@ -429,12 +429,12 @@ HTML_TEMPLATE = """
             const expiresHours = document.getElementById('shareExpires').value;
             const password = document.getElementById('sharePassword').value;
             const maxDownloads = document.getElementById('shareMaxDownloads').value;
-            
+
             if (!documentId) {
                 alert('❌ Belge ID gerekli!');
                 return;
             }
-            
+
             fetch('/api/share/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -505,7 +505,7 @@ def api_login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    
+
     if doxagon.authenticate_user(username, password):
         return jsonify({
             'success': True,
@@ -523,31 +523,31 @@ def api_upload():
     """Belge yükleme"""
     if not doxagon.current_user:
         return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
-    
+
     files = request.files.getlist('files')
     category = request.form.get('category') or None
     description = request.form.get('description', '')
     tags_str = request.form.get('tags', '')
     confidentiality = request.form.get('confidentiality', 'Normal')
-    
+
     tags = [tag.strip() for tag in tags_str.split(',') if tag.strip()] if tags_str else []
-    
+
     uploaded_docs = []
     errors = []
-    
+
     for file in files:
         if file and file.filename:
             # Geçici dosyaya kaydet
             filename = secure_filename(file.filename)
             temp_path = os.path.join(tempfile.gettempdir(), filename)
             file.save(temp_path)
-            
+
             try:
                 # Metadata oluştur
                 metadata = {}
                 if description:
                     metadata['description'] = description
-                
+
                 doc_id = doxagon.upload_document(
                     str(temp_path), category, tags, description, 
                     metadata, confidentiality
@@ -564,12 +564,12 @@ def api_upload():
                     os.remove(temp_path)
                 except:
                     pass
-    
+
     if uploaded_docs:
         message = f"{len(uploaded_docs)} belge başarıyla yüklendi"
         if errors:
             message += f", {len(errors)} hatası var"
-        
+
         return jsonify({
             'success': True,
             'message': message,
@@ -588,16 +588,16 @@ def api_search():
     """Belge arama"""
     if not doxagon.current_user:
         return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
-    
+
     data = request.get_json()
     query = data.get('query', '')
     filters = data.get('filters', {})
     page = data.get('page', 1)
     per_page = data.get('per_page', 20)
-    
+
     # Boş filtreleri temizle
     cleaned_filters = {k: v for k, v in filters.items() if v}
-    
+
     try:
         results = doxagon.search_documents(query, cleaned_filters, page, per_page)
         return jsonify({
@@ -615,7 +615,7 @@ def api_my_documents():
     """Kullanıcının belgeleri"""
     if not doxagon.current_user:
         return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
-    
+
     try:
         results = doxagon.search_documents("", {"uploaded_by": doxagon.current_user['id']})
         return jsonify({
@@ -633,7 +633,7 @@ def api_download(document_id):
     """Belge indirme"""
     if not doxagon.current_user:
         return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
-    
+
     try:
         import sqlite3
         with sqlite3.connect(doxagon.db.db_path) as conn:
@@ -642,18 +642,18 @@ def api_download(document_id):
                 SELECT file_path, original_name FROM documents 
                 WHERE id = ? AND organization_id = ? AND is_active = 1
             ''', (document_id, doxagon.current_user['organization_id']))
-            
+
             result = cursor.fetchone()
             if result:
                 file_path, original_name = result
-                
+
                 # Erişim logla
                 doxagon.log_action("DOWNLOAD", "document", document_id, f"Belge indirildi: {original_name}")
-                
+
                 return send_file(file_path, as_attachment=True, download_name=original_name)
             else:
                 return jsonify({'success': False, 'message': 'Belge bulunamadı'}), 404
-                
+
     except Exception as e:
         return jsonify({'success': False, 'message': f'İndirme hatası: {str(e)}'}), 500
 
@@ -662,13 +662,13 @@ def api_create_share():
     """Paylaşım linki oluştur"""
     if not doxagon.current_user:
         return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
-    
+
     data = request.get_json()
     document_id = data.get('document_id')
     expires_hours = data.get('expires_hours', 24)
     password = data.get('password')
     max_downloads = data.get('max_downloads')
-    
+
     try:
         share_url = doxagon.create_share_link(document_id, expires_hours, password, max_downloads)
         if share_url:
@@ -693,7 +693,7 @@ def api_statistics():
     """Sistem istatistikleri"""
     if not doxagon.current_user:
         return jsonify({'success': False, 'message': 'Oturum açmanız gerekiyor'}), 401
-    
+
     try:
         stats = doxagon.get_statistics()
         return jsonify({
@@ -719,34 +719,34 @@ def public_share(token):
                 JOIN documents d ON sl.document_id = d.id
                 WHERE sl.token = ? AND sl.is_active = 1
             ''', (token,))
-            
+
             share = cursor.fetchone()
             if not share:
                 return jsonify({'error': 'Geçersiz paylaşım linki'}), 404
-            
+
             # Süre kontrolü
             expires_at = datetime.fromisoformat(share[4])
             if datetime.now() > expires_at:
                 return jsonify({'error': 'Paylaşım linkinin süresi dolmuş'}), 410
-            
+
             # İndirme sayısı kontrolü
             if share[6] and share[7] >= share[6]:
                 return jsonify({'error': 'Maksimum indirme sayısına ulaşıldı'}), 410
-            
+
             # Şifre kontrolü (basit - gerçek uygulamada form gösterilmeli)
             if share[5]:  # password_hash var
                 return jsonify({'error': 'Bu paylaşım şifre korumalı'}), 403
-            
+
             # İndirme sayısını artır
             cursor.execute('''
                 UPDATE share_links SET download_count = download_count + 1 
                 WHERE id = ?
             ''', (share[0],))
             conn.commit()
-            
+
             # Dosyayı gönder
             return send_file(share[11], as_attachment=True, download_name=share[10])
-            
+
     except Exception as e:
         return jsonify({'error': f'Paylaşım hatası: {str(e)}'}), 500
 
@@ -757,22 +757,22 @@ if __name__ == '__main__':
         cursor.execute('SELECT COUNT(*) FROM organizations')
         if cursor.fetchone()[0] == 0:
             print("🔧 İlk kurulum yapılıyor...")
-            
+
             # Varsayılan organizasyon
             org_id = doxagon.create_organization("Demo Organizasyon", "enterprise")
-            
+
             # Admin kullanıcı
             admin_id = doxagon.create_user("admin", "admin@demo.com", "admin123", "admin", org_id)
-            
+
             print("✅ Demo organizasyon ve admin kullanıcısı oluşturuldu")
             print("👤 Kullanıcı adı: admin")
             print("🔑 Şifre: admin123")
-    
+
     print("\n🌐 Doxagon Enterprise Web Arayüzü")
     print("=" * 50)
     print("🔗 Web Arayüzü: http://localhost:5000")
     print("📊 API Endpoint: http://localhost:5000/api")
     print("👤 Demo Giriş: admin / admin123")
     print("=" * 50)
-    
+
     app.run(host='0.0.0.0', port=5000, debug=False)
