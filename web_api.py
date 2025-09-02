@@ -22,7 +22,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doxagon Enterprise - Belge Yönetim Sistemi</title>
+    <title>DocuMaster HBA Pro - Belge Yönetim Sistemi</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
@@ -52,7 +52,7 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏢 Doxagon Enterprise</h1>
+            <h1>🏢 DocuMaster HBA Pro</h1>
             <p>Gelişmiş Belge ve Arşiv Yönetim Sistemi</p>
         </div>
 
@@ -768,7 +768,7 @@ if __name__ == '__main__':
             print("👤 Kullanıcı adı: admin")
             print("🔑 Şifre: admin123")
 
-    print("\n🌐 Doxagon Enterprise Web Arayüzü")
+    print("\n🌐 DocuMaster HBA Pro Web Arayüzü")
     print("=" * 50)
     print("🔗 Web Arayüzü: http://localhost:5000")
     print("📊 API Endpoint: http://localhost:5000/api")

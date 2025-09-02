@@ -1042,7 +1042,7 @@ class DoxagonEnterpriseManager:
         }
 
 def main():
-    print("🏢 DOXAGON ENTERPRISE - BELGE YÖNETİM SİSTEMİ")
+    print("🏢 DOCUMASTER HBA PRO - BELGE YÖNETİM SİSTEMİ")
     print("=" * 60)
 
     # Sistem başlat
@@ -1375,7 +1375,7 @@ def main():
                     print()
 
         elif choice == "11":
-            print("👋 Doxagon Enterprise'dan çıkılıyor...")
+            print("👋 DocuMaster HBA Pro'dan çıkılıyor...")
             break
 
         else:
