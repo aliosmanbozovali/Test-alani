@@ -468,13 +468,13 @@ HTML_TEMPLATE = """
         function downloadDocument(documentId) {
             window.open(`/api/documents/${documentId}/download`, '_blank');
         }
-        
+
         function previewDocument(documentId) {
             const previewUrl = `/api/documents/${documentId}/preview`;
-            
+
             // Önizleme için bir modal veya yeni pencere açılabilir
             // Bu örnekte, sayfada bir iframe içinde gösteriyoruz
-            
+
             // Mevcut önizleme içeriğini temizle (eğer varsa)
             const existingPreview = document.getElementById('previewContent');
             if (existingPreview) {
@@ -489,7 +489,7 @@ HTML_TEMPLATE = """
                 <iframe src="${previewUrl}" class="preview-frame" frameborder="0"></iframe>
                 <button class="btn btn-danger" onclick="closePreview()">❌ Kapat</button>
             `;
-            
+
             // Önizleme içeriğini uygun bir yere ekle (örneğin, aktif sekmeye veya sayfa sonuna)
             const activeTab = document.querySelector('.tab-content.active');
             if (activeTab) {
@@ -709,26 +709,26 @@ def api_preview(document_id):
         with sqlite3.connect(doxagon.db.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT file_path, original_name, file_type FROM documents 
+                SELECT file_path, original_name, mime_type FROM documents 
                 WHERE id = ? AND organization_id = ? AND is_active = 1
             ''', (document_id, doxagon.current_user['organization_id']))
 
             result = cursor.fetchone()
             if result:
-                file_path, original_name, file_type = result
+                file_path, original_name, mime_type = result
 
                 # Dosya türüne göre önizleme yap
-                if file_type.startswith('text/'):
+                if mime_type and mime_type.startswith('text/'):
                     with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                         content = f.read()
                     return render_template_string("<pre>{{ content }}</pre>", content=content)
-                elif file_type.startswith('image/'):
-                    return send_file(file_path, mimetype=file_type)
-                elif file_type == 'application/pdf':
+                elif mime_type and mime_type.startswith('image/'):
+                    return send_file(file_path, mimetype=mime_type)
+                elif mime_type == 'application/pdf':
                     # PDF önizleme için genellikle özel kütüphaneler veya servisler gerekir.
                     # Basit bir yaklaşım olarak, PDF'yi doğrudan göstermeye çalışalım.
                     # Daha gelişmiş önizleme için pdf.js gibi bir kütüphane entegre edilebilir.
-                    return send_file(file_path, mimetype=file_type)
+                    return send_file(file_path, mimetype=mime_type)
                 else:
                     return jsonify({'success': False, 'message': 'Bu dosya türü önizlenemez'}), 415
             else:
