@@ -98,6 +98,7 @@ HTML_TEMPLATE = """
                         <option value="Yasal">Yasal</option>
                         <option value="Muhasebe">Muhasebe</option>
                         <option value="İnsan Kaynakları">İnsan Kaynakları</option>
+                        <option value="Lohn Abrechnung">Lohn Abrechnung</option>
                         <option value="Genel">Genel</option>
                     </select>
                 </div>
@@ -142,6 +143,7 @@ HTML_TEMPLATE = """
                             <option value="Yasal">Yasal</option>
                             <option value="Muhasebe">Muhasebe</option>
                             <option value="İnsan Kaynakları">İnsan Kaynakları</option>
+                            <option value="Lohn Abrechnung">Lohn Abrechnung</option>
                             <option value="Genel">Genel</option>
                         </select>
                     </div>
