@@ -541,9 +541,14 @@ def api_upload():
             file.save(temp_path)
             
             try:
+                # Metadata oluştur
+                metadata = {}
+                if description:
+                    metadata['description'] = description
+                
                 doc_id = doxagon.upload_document(
-                    temp_path, category, tags, description, 
-                    confidentiality=confidentiality
+                    str(temp_path), category, tags, description, 
+                    metadata, confidentiality
                 )
                 if doc_id:
                     uploaded_docs.append({'filename': filename, 'id': doc_id})
