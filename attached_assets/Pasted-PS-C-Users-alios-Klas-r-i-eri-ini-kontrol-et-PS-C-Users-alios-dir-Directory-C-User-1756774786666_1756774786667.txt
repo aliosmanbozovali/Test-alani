@@ -1,0 +1,51 @@
+PS C:\Users\alios> # Klasör içeriğini kontrol et
+PS C:\Users\alios> dir
+
+
+    Directory: C:\Users\alios
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        21.08.2025     23:17                .android
+d-----        24.08.2025     13:25                .app-store
+d-----        26.08.2025     05:14                .bubblewrap
+d-----         1.09.2025     01:49                .docker
+d-----        28.08.2025     10:28                .expo
+d-----        21.08.2025     22:54                .gradle
+d-----        21.08.2025     23:42                .skiko
+d-----        21.08.2025     22:53                AndroidStudioProjects
+d-r---         7.08.2025     14:01                Contacts
+d-----        28.08.2025     01:21                CrossDevice
+d-r---         2.09.2025     01:02                Desktop
+d-r---         7.08.2025     14:01                Documents
+d-r---         2.09.2025     02:47                Downloads
+d-r---         7.08.2025     14:01                Favorites
+d-----        25.08.2025     03:09                kendime
+d-r---         7.08.2025     14:01                Links
+d-r---         7.08.2025     14:01                Music
+d-----        29.08.2025     01:05                node_modules
+dar--l         2.09.2025     00:57                OneDrive
+d-r---        30.08.2025     03:08                Pictures
+d-r---         7.08.2025     14:01                Saved Games
+d-r---        21.08.2025     11:53                Searches
+d-r---        21.08.2025     22:27                Videos
+-a----        31.08.2025     03:56            540 .env
+-a----         2.09.2025     01:02            194 .gitconfig
+-a----        26.08.2025     04:56            136 app.json
+-a----        30.08.2025     03:34              0 cd
+-a----         1.09.2025     02:25           1343 docker-compose.yml
+-a----        25.08.2025     02:15            344 eas.json
+-a----        30.08.2025     03:34              0 mkdir
+-a----        30.08.2025     03:34              0 notepad
+-a----        29.08.2025     01:05         342041 package-lock.json
+-a----        24.08.2025     03:24            412 package.json
+-a----        30.08.2025     03:34              0 py
+-a----        30.08.2025     03:34              0 Start-Process
+
+
+PS C:\Users\alios>
+PS C:\Users\alios> # DocuMaster HBA Pro'yu başlat
+PS C:\Users\alios> python web_api.py
+C:\Users\alios\AppData\Local\Programs\Python\Python313\python.exe: can't open file 'C:\\Users\\alios\\web_api.py': [Errno 2] No such file or directory
+PS C:\Users\alios>
