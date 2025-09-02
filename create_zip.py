@@ -15,7 +15,8 @@ def create_project_zip():
         'web_api.py', 
         'pyproject.toml',
         '.replit',
-        'generated-icon.png'
+        'generated-icon.png',
+        'doxagon.db'
     ]
     
     include_folders = [
@@ -28,7 +29,6 @@ def create_project_zip():
     exclude_patterns = [
         '__pycache__',
         '.git',
-        'doxagon.db',  # Veritabanı dosyası hariç
         'uv.lock',
         '.gitignore'
     ]
